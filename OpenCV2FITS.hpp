@@ -11,6 +11,8 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <iostream>
+#include <mutex>
+
 extern "C" 
 {
     #include <fitsio.h>
@@ -19,7 +21,158 @@ extern "C"
 class OpenCV2FITS
 {
     public:
-        static bool saveMat2FITS(
+        bool openFITS(std::string filepath)
+        {
+            int status = 0;
+            fitsfile *fptr;
+            int ret;
+
+            std::lock_guard guard(this->lock);
+            if(this->isOpen)
+            {
+                ret = fits_close_file(this->file, &status);
+                if(ret) 
+                {
+                    // Handle error
+                }
+                else
+                {
+                    this->isOpen = false;
+                }
+            }
+
+            status = 0;
+            ret = fits_create_file(&this->file, filepath.c_str(), &status);
+            if(ret) 
+            {
+                status = 0;
+                ret = fits_open_file(&this->file, filepath.c_str(), 1, &status);
+                if(ret) 
+                {
+                    // Handle error
+                    std::cerr << "FITS create/open file error: " << filepath.c_str() << ":" << status << std::endl; 
+                    this->isOpen = false;
+                    return false;
+                }
+            }
+            this->isOpen = true;
+            
+            return true;
+        }
+
+        bool addMat2FITS(cv::Mat &image, std::vector<std::pair<std::string, double>> &keys)
+        {
+            int status = 0;
+            int ret;
+            int BITPIX;
+
+            switch(image.type())
+            {
+                case CV_8U:
+                {
+                    BITPIX = BYTE_IMG;
+                    break;
+                }
+                case CV_16U:
+                {
+                    BITPIX = SHORT_IMG;
+                    break;
+                }
+                default:
+                {
+                    std::cerr << "CV::Mat image type not currently supported: " <<  image.type() << std::endl;
+                    return false;
+                }
+
+            }
+
+            long shape[2] = {image.cols, image.rows};
+
+            std::lock_guard guard(this->lock);
+            if(false == this->isOpen)
+            {
+                std::cerr << "fits file is not opened yet... " << std::endl;
+                return false;
+            }
+            ret = fits_create_img(file, BITPIX, 2, shape, &status);
+            if(ret) 
+            {
+                // Handle error
+                std::cerr << "FITS create image error: " << status << std::endl; 
+                return false;
+            }
+
+            if(BYTE_IMG == BITPIX)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TBYTE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else
+            {
+                ret = fits_write_img(
+                    file, 
+                    TSHORT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            if(ret) 
+            {
+                // Handle error
+                std::cerr << "FITS write image error: " << status << std::endl; 
+                return false;
+            }
+
+            for(auto key : keys)
+            {
+                ret = fits_write_key(
+                    this->file, 
+                    TDOUBLE, 
+                    key.first.c_str(), 
+                    &key.second,
+                    "", 
+                    &status);
+                if(ret) 
+                {
+                    // Handle error
+                    std::cerr << "FITS write key error: " << status << std::endl; 
+                    fits_close_file(this->file, &status);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool closeFITS(void)
+        {
+            int status = 0;
+            int ret;
+
+            std::lock_guard guard(this->lock);
+            if(false == this->isOpen)
+            {
+                return false;
+            }
+            
+            ret = fits_close_file(this->file, &status);
+            if(ret) 
+            {
+                // Handle error
+                std::cerr << "FITS close file error: " << status << std::endl; 
+                return false;
+            }
+            this->isOpen = false;
+            return true;
+        }
+
+        bool saveMat2FITS(
             cv::Mat &image, 
             std::string filepath)
         {
@@ -28,7 +181,7 @@ class OpenCV2FITS
             int ret;
             int BITPIX;
 
-
+            std::lock_guard guard(this->lock);
             ret = fits_create_file(&fptr, filepath.c_str(), &status);
             if(ret) 
             {
@@ -105,7 +258,7 @@ class OpenCV2FITS
             return true;
         }
 
-        static bool saveMat2FITS(
+        bool saveMat2FITS(
             cv::Mat &image, 
             std::string filepath,
             std::vector<std::pair<std::string, double>> &keys)
@@ -115,7 +268,7 @@ class OpenCV2FITS
             int ret;
             int BITPIX;
 
-
+            std::lock_guard guard(this->lock);
             ret = fits_create_file(&fptr, filepath.c_str(), &status);
             if(ret) 
             {
@@ -211,6 +364,10 @@ class OpenCV2FITS
 
             return true;
         }
+    private:
+        std::mutex lock;
+        fitsfile *file;
+        bool isOpen = false;
 };
 
 #endif 
