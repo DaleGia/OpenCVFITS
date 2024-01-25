@@ -28,7 +28,7 @@ class OpenCV2FITS
             int ret;
 
             std::lock_guard guard(this->lock);
-            if(this->isOpen)
+            if(this->open)
             {
                 ret = fits_close_file(this->file, &status);
                 if(ret) 
@@ -37,7 +37,7 @@ class OpenCV2FITS
                 }
                 else
                 {
-                    this->isOpen = false;
+                    this->open = false;
                 }
             }
 
@@ -51,11 +51,11 @@ class OpenCV2FITS
                 {
                     // Handle error
                     std::cerr << "FITS create/open file error: " << filepath.c_str() << ":" << status << std::endl; 
-                    this->isOpen = false;
+                    this->open = false;
                     return false;
                 }
             }
-            this->isOpen = true;
+            this->open = true;
             
             return true;
         }
@@ -89,7 +89,7 @@ class OpenCV2FITS
             long shape[2] = {image.cols, image.rows};
 
             std::lock_guard guard(this->lock);
-            if(false == this->isOpen)
+            if(false == this->open)
             {
                 std::cerr << "fits file is not opened yet... " << std::endl;
                 return false;
@@ -156,7 +156,7 @@ class OpenCV2FITS
             int ret;
 
             std::lock_guard guard(this->lock);
-            if(false == this->isOpen)
+            if(false == this->open)
             {
                 return false;
             }
@@ -168,7 +168,7 @@ class OpenCV2FITS
                 std::cerr << "FITS close file error: " << status << std::endl; 
                 return false;
             }
-            this->isOpen = false;
+            this->open = false;
             return true;
         }
 
@@ -364,10 +364,15 @@ class OpenCV2FITS
 
             return true;
         }
+
+        bool isOpen()
+        {
+            return open;
+        }
     private:
         std::mutex lock;
         fitsfile *file;
-        bool isOpen = false;
+        bool open = false;
 };
 
 #endif 
