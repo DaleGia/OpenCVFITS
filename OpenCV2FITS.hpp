@@ -78,12 +78,21 @@ class OpenCV2FITS
                     BITPIX = SHORT_IMG;
                     break;
                 }
+                case CV_32F:
+                {
+                    BITPIX = FLOAT_IMG;
+                    break;
+                }
+                case CV_64F:
+                {
+                    BITPIX = DOUBLE_IMG;
+                    break;
+                }
                 default:
                 {
                     std::cerr << "CV::Mat image type not currently supported: " <<  image.type() << std::endl;
                     return false;
                 }
-
             }
 
             long shape[2] = {image.cols, image.rows};
@@ -112,7 +121,7 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
-            else
+            else if(SHORT_IMG)
             {
                 ret = fits_write_img(
                     file, 
@@ -122,6 +131,28 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
+            else if(FLOAT_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TFLOAT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(DOUBLE_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TDOUBLE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+
+
             if(ret) 
             {
                 // Handle error
@@ -145,6 +176,108 @@ class OpenCV2FITS
                     fits_close_file(this->file, &status);
                     return false;
                 }
+            }
+
+            return true;
+        }
+
+        bool addMat2FITS(cv::Mat &image)
+        {
+            int status = 0;
+            int ret;
+            int BITPIX;
+
+            switch(image.type())
+            {
+                case CV_8U:
+                {
+                    BITPIX = BYTE_IMG;
+                    break;
+                }
+                case CV_16U:
+                {
+                    BITPIX = SHORT_IMG;
+                    break;
+                }
+                case CV_32F:
+                {
+                    BITPIX = FLOAT_IMG;
+                    break;
+                }
+                case CV_64F:
+                {
+                    BITPIX = DOUBLE_IMG;
+                    break;
+                }
+                default:
+                {
+                    std::cerr << "CV::Mat image type not currently supported: " <<  image.type() << std::endl;
+                    return false;
+                }
+            }
+
+            long shape[2] = {image.cols, image.rows};
+
+            std::lock_guard guard(this->lock);
+            if(false == this->open)
+            {
+                std::cerr << "fits file is not opened yet... " << std::endl;
+                return false;
+            }
+            ret = fits_create_img(file, BITPIX, 2, shape, &status);
+            if(ret) 
+            {
+                // Handle error
+                std::cerr << "FITS create image error: " << status << std::endl; 
+                return false;
+            }
+
+            if(BYTE_IMG == BITPIX)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TBYTE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(SHORT_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TSHORT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(FLOAT_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TFLOAT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(DOUBLE_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TDOUBLE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+
+            if(ret) 
+            {
+                // Handle error
+                std::cerr << "FITS write image error: " << status << std::endl; 
+                return false;
             }
 
             return true;
@@ -202,12 +335,21 @@ class OpenCV2FITS
                     BITPIX = SHORT_IMG;
                     break;
                 }
+                case CV_32F:
+                {
+                    BITPIX = FLOAT_IMG;
+                    break;
+                }
+                case CV_64F:
+                {
+                    BITPIX = DOUBLE_IMG;
+                    break;
+                }
                 default:
                 {
                     std::cerr << "CV::Mat image type not currently supported: " <<  image.type() << std::endl;
                     return false;
                 }
-
             }
 
             long shape[2] = {image.cols, image.rows};
@@ -222,23 +364,44 @@ class OpenCV2FITS
             if(BYTE_IMG == BITPIX)
             {
                 ret = fits_write_img(
-                    fptr, 
+                    file, 
                     TBYTE, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
                     &status); 
             }
-            else
+            else if(SHORT_IMG)
             {
                 ret = fits_write_img(
-                    fptr, 
+                    file, 
                     TSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
                     &status); 
             }
+            else if(FLOAT_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TFLOAT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(DOUBLE_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TDOUBLE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+
             if(ret) 
             {
                 // Handle error
@@ -289,12 +452,21 @@ class OpenCV2FITS
                     BITPIX = SHORT_IMG;
                     break;
                 }
+                case CV_32F:
+                {
+                    BITPIX = FLOAT_IMG;
+                    break;
+                }
+                case CV_64F:
+                {
+                    BITPIX = DOUBLE_IMG;
+                    break;
+                }
                 default:
                 {
                     std::cerr << "CV::Mat image type not currently supported: " <<  image.type() << std::endl;
                     return false;
                 }
-
             }
 
             long shape[2] = {image.cols, image.rows};
@@ -311,23 +483,44 @@ class OpenCV2FITS
             if(BYTE_IMG == BITPIX)
             {
                 ret = fits_write_img(
-                    fptr, 
+                    file, 
                     TBYTE, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
                     &status); 
             }
-            else
+            else if(SHORT_IMG)
             {
                 ret = fits_write_img(
-                    fptr, 
+                    file, 
                     TSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
                     &status); 
             }
+            else if(FLOAT_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TFLOAT, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+            else if(DOUBLE_IMG)
+            {
+                ret = fits_write_img(
+                    file, 
+                    TDOUBLE, 
+                    1, 
+                    image.rows * image.cols, 
+                    image.data, 
+                    &status); 
+            }
+
             if(ret) 
             {
                 // Handle error
