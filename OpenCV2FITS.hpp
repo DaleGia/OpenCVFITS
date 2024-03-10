@@ -75,7 +75,7 @@ class OpenCV2FITS
                 }
                 case CV_16U:
                 {
-                    BITPIX = SHORT_IMG;
+                    BITPIX = USHORT_IMG;
                     break;
                 }
                 case CV_32F:
@@ -121,11 +121,11 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
-            else if(SHORT_IMG)
+            else if(USHORT_IMG)
             {
                 ret = fits_write_img(
                     file, 
-                    TSHORT, 
+                    TUSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
@@ -196,7 +196,7 @@ class OpenCV2FITS
                 }
                 case CV_16U:
                 {
-                    BITPIX = SHORT_IMG;
+                    BITPIX = USHORT_IMG;
                     break;
                 }
                 case CV_32F:
@@ -242,11 +242,11 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
-            else if(SHORT_IMG)
+            else if(USHORT_IMG)
             {
                 ret = fits_write_img(
                     file, 
-                    TSHORT, 
+                    TUSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
@@ -332,7 +332,7 @@ class OpenCV2FITS
                 }
                 case CV_16U:
                 {
-                    BITPIX = SHORT_IMG;
+                    BITPIX = USHORT_IMG;
                     break;
                 }
                 case CV_32F:
@@ -371,11 +371,11 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
-            else if(SHORT_IMG)
+            else if(USHORT_IMG)
             {
                 ret = fits_write_img(
                     file, 
-                    TSHORT, 
+                    TUSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
@@ -449,7 +449,7 @@ class OpenCV2FITS
                 }
                 case CV_16U:
                 {
-                    BITPIX = SHORT_IMG;
+                    BITPIX = USHORT_IMG;
                     break;
                 }
                 case CV_32F:
@@ -490,11 +490,11 @@ class OpenCV2FITS
                     image.data, 
                     &status); 
             }
-            else if(SHORT_IMG)
+            else if(USHORT_IMG)
             {
                 ret = fits_write_img(
                     file, 
-                    TSHORT, 
+                    TUSHORT, 
                     1, 
                     image.rows * image.cols, 
                     image.data, 
