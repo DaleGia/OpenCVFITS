@@ -1,31 +1,31 @@
-#OpenCVFITS
+# OpenCVFITS
 OpenCVFITS is a single header file C++ library designed to write and read FITS
-files with cv::Mat objects. It has basic functionality to add keys to each image
-and to write and read multiple image FITS files.
+files with cv::Mat objects. It has basic functionality to write keys to images, and read image keys. 
+It can write multiple images to a single FITS file, and read multiple images from a single FITS file.
 
-##Installation
+## Installation
 Install the following packages:
 - libopencv-dev
 - libcfitsio-dev
-Then just place the header file in your project. Examples using cmake on how to 
-link and build projects using OpenCVFITS are available in the examples. This 
-library has been tested on Ubuntu 22.04 LTS, but should work on other 
-distributions.
+  
+Then place the header file in your project. An example on how to build a project using OpenCVFITS with cmake is available. This 
+library has been tested on Ubuntu 22.04 LTS, but should work on other distributions.
 
-##Building and running the example
-'''
+## Building and running the example
+```
 mkdir build
 cd build
 cmake ..
 cmake --build .
 ./example
-'''
-The example creates a FITS file with three images inside. It opens each image, 
-displays it, and prints the keys on the console.
+```
 
-#Usage
-##Create, add images, add keys, and close
-'''
+The example creates a FITS file with three images inside. It opens each image, 
+displays it, and prints the keys on the console. Do not run the example from a VSCode terminal, the images will not display.
+
+# Usage
+## Create, add images, add keys, and close
+```
 /* Assume this is actually full of data */
 cv::Mat image1;
 cv::Mat image2;
@@ -42,10 +42,10 @@ fits.addMat2FITS(image3);
 fits.addKey2FITS("TestDouble", 3.3);
 fits.addKey2FITS("testsigned", (int64_t)5231292);
 fits.closeFITS();
-'''
+```
 
-##Open, get images and keys, and close
-'''
+## Open, get images and keys, and close
+```
 cv::Mat image;
 std::string key;
 std::string value;
@@ -59,6 +59,8 @@ while(true == fits.getNextImage(image))
         std::cout << key << ": " << value << std::endl;
     }
 }
-'''
-#Limitations
+fits.closeFITS();
+```
+
+## Limitations
 At the moment it only works with CV_8U and CV_16U data. Help me add other types!
