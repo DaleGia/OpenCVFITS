@@ -318,6 +318,7 @@ public:
         if (0 != ret)
         {
             std::cerr << "OpenCVFITS: FITS close file error: " << status << std::endl;
+            this->open = false;
             return false;
         }
         this->open = false;
