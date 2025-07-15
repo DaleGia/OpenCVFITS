@@ -91,6 +91,11 @@ public:
             BITPIX = USHORT_IMG;
             break;
         }
+        case CV_32F:
+        {
+            BITPIX = FLOAT_IMG;
+            break;
+        }
         default:
         {
             std::cerr << "OpenCVFITS: CV::Mat image type not currently supported: " << image.type() << std::endl;
@@ -122,11 +127,21 @@ public:
                 image.data,
                 &status);
         }
-        else if (USHORT_IMG)
+        else if (USHORT_IMG == BITPIX)
         {
             ret = fits_write_img(
                 this->file,
                 TUSHORT,
+                1,
+                image.rows * image.cols,
+                image.data,
+                &status);
+        }
+        else if (FLOAT_IMG == BITPIX)
+        {
+            ret = fits_write_img(
+                this->file,
+                TFLOAT,
                 1,
                 image.rows * image.cols,
                 image.data,
@@ -460,15 +475,26 @@ public:
         switch (bitpix)
         {
         case BYTE_IMG:
+        {
             datatype = TBYTE;
             data_size = naxes[0] * naxes[1] * 1;
             openCVType = CV_8U;
             break;
+        }
         case SHORT_IMG:
+        {
             datatype = TSHORT;
             data_size = naxes[0] * naxes[1] * 2;
             openCVType = CV_16U;
             break;
+        }
+        case FLOAT_IMG:
+        {
+            datatype = TFLOAT;
+            data_size = naxes[0] * naxes[1] * 4;
+            openCVType = CV_32F;
+            break;
+        }
         default:
             std::cerr << "FITSOpenCV: Unsupported data type in BITPIX: " << bitpix << std::endl;
             return false;
