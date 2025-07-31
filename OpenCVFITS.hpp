@@ -96,6 +96,11 @@ public:
             BITPIX = FLOAT_IMG;
             break;
         }
+        case CV_64F:
+        {
+            BITPIX = DOUBLE_IMG;
+            break;
+        }
         default:
         {
             std::cerr << "OpenCVFITS: CV::Mat image type not currently supported: " << image.type() << std::endl;
@@ -142,6 +147,16 @@ public:
             ret = fits_write_img(
                 this->file,
                 TFLOAT,
+                1,
+                image.rows * image.cols,
+                image.data,
+                &status);
+        }
+        else if (DOUBLE_IMG == BITPIX)
+        {
+            ret = fits_write_img(
+                this->file,
+                TDOUBLE,
                 1,
                 image.rows * image.cols,
                 image.data,
@@ -493,6 +508,13 @@ public:
             datatype = TFLOAT;
             data_size = naxes[0] * naxes[1] * 4;
             openCVType = CV_32F;
+            break;
+        }
+        case DOUBLE_IMG:
+        {
+            datatype = TDOUBLE;
+            data_size = naxes[0] * naxes[1] * 8;
+            openCVType = CV_64F;
             break;
         }
         default:
